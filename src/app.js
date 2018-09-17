@@ -1,11 +1,13 @@
-var Twitter = require('twitter');
-var Finder = require('find-rss');
+const Twitter = require('twitter');
+const Finder = require('find-rss');
+const Builder = require('xmlbuilder');
+const fs = require('fs');
 
  const app = {
   _client: null,
-  _screenName: "",
-  _outlines: [],
-  _verbose: true,
+  _verboseLogging: true,
+  _outputFile:"d:/temp/twitterFriendsBlogFeeds.opml",
+
   init: function(screenName) {
     _client = new Twitter({
       consumer_key: process.env.TWITTER_CONSUMER_KEY,
@@ -19,11 +21,52 @@ var Finder = require('find-rss');
       getDetail: true
     });
 
-    _screenName = screenName;
-    this.getFriends(_screenName, "-1")
+    this.buildOpml(screenName).then(opml => fs.writeFileSync(this._outputFile, opml, 'utf8'));
   },
 
-  getFriends: function(screenName, cursor) {
+  buildOpml : async function(screenName) {
+    const outlines = await this.getOutlines(screenName);
+
+    var opml = Builder.create("opml", { encoding: 'utf-8' })
+                      .att({"version":"1.0"})
+                      .ele("head")
+                        .ele("title", screenName + "'s Twitter friends")
+                      .up().up()
+                      .ele("body");
+
+    outlines.forEach(outline => { 
+                                  row = Builder.create('outline');
+                                  Object.entries(outline).forEach(([key, value]) => { if (value) row.att(key,value) });
+                                  opml.importDocument(row); 
+                                }
+                    );
+
+    var file = opml.end({pretty: true});
+
+    return file;
+  },
+
+  getOutlines: async function(screenName) {
+    let allOutlines = [];
+    let cursor;
+    do{ 
+      let batchOfFriends = await this.getAllFriendsChunked(screenName, cursor);
+      cursor = batchOfFriends.cursor || "0";
+      if (this._verboseLogging) console.log("fetched " + batchOfFriends.friends.length + " friend(s)");
+
+      let batchOfFeeds = await this.getFeedsForFriends(batchOfFriends.friends);
+      let batchOfOutlines = batchOfFeeds.reduce((acc, feed) => acc.concat(feed), [])
+                                          .map(feed => this.mapFeedToOutline(feed))
+                                          .filter(feed => feed);
+
+      if (this._verboseLogging) console.log("fetched " + batchOfOutlines.length + " feed(s)");
+      allOutlines.push.apply(allOutlines, batchOfOutlines);
+    }  while (cursor !== "0");
+
+    return allOutlines;
+  },
+
+  getAllFriendsChunked: async function(screenName, cursor) {
     let params = {
       screen_name: screenName,
       cursor: cursor,
@@ -32,64 +75,53 @@ var Finder = require('find-rss');
       include_user_entities: true,
     };
 
-    _client.get('friends/list', params, this.processFriends.bind(this));
+    //try {
+      let result = await _client.get('friends/list', params);
+    //}
+    //catch(error) {
+    //  console.log(error);
+    //}
+
+    return { "friends" : result.users, "cursor": result.next_cursor_str };
   },
 
-  processFriends: function(error, results, response) {
-    if (!error) {
-      let that = this;
-      results.users.forEach(function(user){
-          //slimUser = (({ screen_name, url }) => ({ screen_name, url }))(user)
-          //console.log(slimUser);
-          if (user.url != null) {
-            that.getFeeds(user.url);
-          }
-      });
+  // sleep: function sleep(ms) {
+  //   return new Promise(resolve => setTimeout(resolve, ms));
+  // },
 
-      if (results.next_cursor_str !== "0"){
-        this.getFriends(_screenName, results.next_cursor_str);
-      }
-      else {
-        this.processOutlines();
-      }
-    }
-    else {
-      console.log(error); 
-    }
+  getFeedsForFriends: async function(friends) {
+    const feeds = await Promise.all(friends.filter(friend => friend.url)
+                                           .map(friend => this.getFeedForFriend(friend)))
+                               .then(f => results = f);
 
+    return feeds.filter(feed => feed && feed.length > 0);
   },
 
-  getFeeds: function(url) {
-    Finder(url, this.processFeeds.bind(this));
+  getFeedForFriend: async function(friend) {
+     if (this._verboseLogging) process.stdout.write("finding feed for \x1b[33m" + friend.screen_name + "\x1b[0m at \x1b[33m" + friend.url + "\x1b[0m");
+     try {
+      let feeds = await Finder(friend.url)
+      if (this._verboseLogging) process.stdout.write("\x1b[32m found " + (feeds ? feeds.length  : 0) + " feed(s) \x1b[0m\n");
+      return feeds;
+     }
+     catch(error) {
+      if (this._verboseLogging) process.stdout.write("\x1b[31m failed because:\x1b[0m\n " + error.message + "\n");
+     }
   },
 
-  processFeeds(error, response, body) {
-    if (!error) {
-      if (response.length > 0){
-        let chosenFeed = response[0];
-        let outline = {
-          text: chosenFeed.title,
-          description: chosenFeed.description,
-          htmlUrl: chosenFeed.link,
-          language: chosenFeed.language,
-          title: chosenFeed.title,
-          type: chosenFeed["#type"],
-          version: chosenFeed["#version"],
-          xmlUrl: chosenFeed.url || chosenFeed.xmlurl || chosenFeed.xmlUrl
-        };
-        
-        if(outline.xmlUrl !== null){
-          this._outlines.push(outline);
-        }
-      }
-    }
-  },
+  mapFeedToOutline: function(feed) {
+    const outline = {
+      text: feed.title,
+      description: feed.description,
+      htmlUrl: feed.link,
+      language: feed.language,
+      title: feed.title,
+      type: feed["#type"],
+      version: feed["#version"],
+      xmlUrl: feed.url || feed.xmlurl || feed.xmlUrl
+    };
 
-  processOutlines: function() {
-    console.log("");
-    console.log("========================");
-    console.log("---- begin outlines ----");
-    console.log(JSON.stringify(this._outlines));
+    return (outline.xmlUrl ? outline : null);
   }
 };
 
