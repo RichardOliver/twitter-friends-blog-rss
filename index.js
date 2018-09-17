@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+var Program = require('commander');
 const Twitter = require('twitter');
 const Finder = require('find-rss');
 const Builder = require('xmlbuilder');
@@ -6,9 +8,30 @@ const fs = require('fs');
  const app = {
   _client: null,
   _verboseLogging: true,
-  _outputFile:"d:/temp/twitterFriendsBlogFeeds.opml",
+  _outputFile:"",
 
-  init: function(screenName) {
+  init: function(screenName, outputFile, verboseLogging) {
+    if (!process.env.TWITTER_CONSUMER_KEY 
+        || !process.env.TWITTER_CONSUMER_SECRET
+        || !process.env.TWITTER_ACCESS_TOKEN_KEY
+        || !process.env.TWITTER_ACCESS_TOKEN_SECRET) {
+      
+      
+          console.log("Please setup an environment variables called:\nTWITTER_CONSUMER_KEY\nTWITTER_CONSUMER_SECRET\nTWITTER_ACCESS_TOKEN_KEY\nTWITTER_ACCESS_TOKEN_SECRET that holds your Twitter details");
+          return;
+    }
+    if (screenName.charAt(0) === '@')  screenName = screenName.substring(1);
+
+    this._outputFile = outputFile ? outputFile : "MyTwitterFriendsBlogFeeds.opml";
+    this._verboseLogging = verboseLogging;
+    
+
+    this.setup();
+
+    this.buildOpml(screenName).then(opml => fs.writeFileSync(this._outputFile, opml, 'utf8'));
+  },
+
+  setup : function(){
     _client = new Twitter({
       consumer_key: process.env.TWITTER_CONSUMER_KEY,
       consumer_secret: process.env.TWITTER_CONSUMER_SECRET,
@@ -20,8 +43,6 @@ const fs = require('fs');
       favicon: false,
       getDetail: true
     });
-
-    this.buildOpml(screenName).then(opml => fs.writeFileSync(this._outputFile, opml, 'utf8'));
   },
 
   buildOpml : async function(screenName) {
@@ -125,4 +146,12 @@ const fs = require('fs');
   }
 };
 
-app.init('rolivercoffee');
+app.init("@rolivercoffee");
+
+// Program
+// .description("Produces an OPML file of all your twitter friend's blog rss feeds" )
+// .arguments('<file>')
+// .option('-h, --twitter-handle [value]', 'twitter screen name (handle)', 'rolivercoffee')
+// .option('-v, --verbose', 'verbose logging')
+// .parse(process.argv)
+// .action(function(file) { app.init(program.twitter-handle, file, program.verbose) } );

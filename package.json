@@ -1,0 +1,22 @@
+{
+  "name": "twitter-friends-blog-rss",
+  "version": "0.1.0",
+  "description": "A command line tool to generate an OPML file of your twitter friends blog feeds",
+  "main": "index.js",
+  "author": "Richard Oliver",
+  "license": "Apache-2.0",
+  "bin": {
+    "twitterBlogFeeds": "./index.js"
+  },
+  "dependencies": {
+    "commander": "^2.18.0",
+    "find-rss": "^1.6.4",
+    "twitter": "^1.7.1",
+    "xmlbuilder": "^10.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^5.6.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-import": "^2.14.0"
+  }
+}
