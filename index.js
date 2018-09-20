@@ -139,14 +139,18 @@ const fs = require('fs');
   },
 
   getFeedForFriend: async function(friend) {
-     if (this._verboseLogging) process.stdout.write("finding feed for \x1b[33m" + friend.screen_name + "\x1b[0m at \x1b[33m" + friend.url + "\x1b[0m");
+    const resetColour = "\x1b[0m";
+    const brightColour = "\x1b[1m";
+    const foregroundGreen = "\x1b[32m";
+    const foregroundRed = "\x1b[31m";
+    const newline = "\n";
      try {
       let feeds = await Finder(friend.url)
-      if (this._verboseLogging) process.stdout.write("\x1b[32m found " + (feeds ? feeds.length  : 0) + " feed(s) \x1b[0m\n");
+      if (this._verboseLogging) process.stdout.write((feeds && feeds.length > 0 ? brightColour   : "") + foregroundGreen + "Found " + (feeds ? feeds.length  : 0) + " feed(s) for " + friend.screen_name + " at " + friend.url + resetColour + newline);
       return feeds;
      }
      catch(error) {
-      if (this._verboseLogging) process.stdout.write("\x1b[31m failed because:\x1b[0m\n " + error.message + "\n");
+      if (this._verboseLogging) process.stdout.write(foregroundRed + "Failed to find feeds for " + friend.screen_name + " at " + friend.url + " because " + error.message + resetColour + newline);
      }
   },
 
