@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-var Program = require('commander');
+var program = require('commander');
 const Twitter = require('twitter');
 const Finder = require('find-rss');
 const Builder = require('xmlbuilder');
@@ -8,9 +8,8 @@ const fs = require('fs');
  const app = {
   _client: null,
   _verboseLogging: true,
-  _outputFile:"",
 
-  init: function(screenName, outputFile, verboseLogging) {
+  init: function() {
     if (!process.env.TWITTER_CONSUMER_KEY 
         || !process.env.TWITTER_CONSUMER_SECRET
         || !process.env.TWITTER_ACCESS_TOKEN_KEY
@@ -20,15 +19,36 @@ const fs = require('fs');
           console.log("Please setup an environment variables called:\nTWITTER_CONSUMER_KEY\nTWITTER_CONSUMER_SECRET\nTWITTER_ACCESS_TOKEN_KEY\nTWITTER_ACCESS_TOKEN_SECRET that holds your Twitter details");
           return;
     }
+
+    let outputFile = "";
+    program
+    .name("twitterBlogFeeds")
+    .description("Produces an OPML file of all your twitter friend's blog rss feeds" )
+    .arguments('<file>')
+    .option('-n, --screen-name [value]', 'twitter screen name (handle)', 'rolivercoffee')
+    .option('-v, --verbose', 'verbose logging', false)
+    .action(function (file) {
+      outputFile = file;
+    })
+    .parse(process.argv);
+
+    const screenName = program.screenName ? program.screenName : "rolivercoffee";
     if (screenName.charAt(0) === '@')  screenName = screenName.substring(1);
 
-    this._outputFile = outputFile ? outputFile : "MyTwitterFriendsBlogFeeds.opml";
-    this._verboseLogging = verboseLogging;
+    if (!outputFile) {
+      console.log();
+      console.log("-".repeat(40));
+      console.log("Please specify an output file name e.g. MyTwitterFriendsBlogFeeds.opml");
+      console.log();
+      program.help();
+    }
+
+    this._verboseLogging = program.verbose ? program.verbose : false;
     
 
     this.setup();
 
-    this.buildOpml(screenName).then(opml => fs.writeFileSync(this._outputFile, opml, 'utf8'));
+    this.buildOpml(screenName).then(opml => fs.writeFileSync(outputFile, opml, 'utf8'));
   },
 
   setup : function(){
@@ -146,12 +166,5 @@ const fs = require('fs');
   }
 };
 
-app.init("@rolivercoffee");
 
-// Program
-// .description("Produces an OPML file of all your twitter friend's blog rss feeds" )
-// .arguments('<file>')
-// .option('-h, --twitter-handle [value]', 'twitter screen name (handle)', 'rolivercoffee')
-// .option('-v, --verbose', 'verbose logging')
-// .parse(process.argv)
-// .action(function(file) { app.init(program.twitter-handle, file, program.verbose) } );
+app.init();
