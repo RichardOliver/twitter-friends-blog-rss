@@ -1,6 +1,6 @@
 # Twitter Blog Feeds
 
-A command line tool to generate an [OPML] (https://en.wikipedia.org/wiki/OPML) file of your twitter friends blog feeds
+A command line tool to generate an [OPML](https://en.wikipedia.org/wiki/OPML) file of your twitter friends blog feeds
 
 The tool loops through all the accounts that are being followed, checking their profiles for a URL.
 Each of these URLs are checked for RSS or atom feeds and those feeds are collated into an OPML file.
@@ -21,8 +21,8 @@ The script requires you to set up the following four operating system environmen
 ```
 
 These variables need to be populated with your twitter access tokens.
-To get your access tokens you'll need a [Twitter Developer account] (https://developer.twitter.com/en/dashboard)
-Then to access your keys set up an app in [Twitter Apps] (https://apps.twitter.com/) 
+To get your access tokens you'll need a [Twitter Developer account](https://developer.twitter.com/en/dashboard)
+Then to access your keys set up an app in [Twitter Apps](https://apps.twitter.com/) 
 
 (Note: This application uses twitter's User based authentication.)
 
@@ -30,7 +30,8 @@ Once the script is installed and the environment variables have been set up
 you simply need to run `twitterBlogFeeds` from the command line.
 
 ## Usage 
-```twitterBlogFeeds [options] <file>
+```
+twitterBlogFeeds [options] <file>
 
 Produces an OPML file of all your twitter friend's blog rss feeds
 
@@ -38,14 +39,15 @@ Options:
 
   -n, --screen-name [value]  twitter screen name (handle) (default: rolivercoffee)
   -v, --verbose              verbose logging
-  -h, --help                 output usage information```
+  -h, --help                 output usage information
+  ```
 
   As a minimum you must supply a file name preferably with an `.opml` extension. 
   whilst it's not required probably useful to provide a screen-name too!
   
   Note: the screen-name option is your twitter handle (without the leading `@` character)
 
-  Example:
+ #### Example:
   `twitterBlogFeeds -n rolivercoffee MyTwitterFriendsBlogFeeds.opml`
   This command will retrieve all the rss feeds for all the accounts with urls & rss feeds that @rolivercoffee is following and store the rss feeds in the `MyTwitterFriendsBlogFeeds.opml` file.
 
@@ -53,10 +55,10 @@ Options:
 If you'd like to see what the program is _up to_ you can include the -v option.  
 This is helpful because it can often take quite some time to run through all the accounts.
 
-  Example:.
+ #### Example:.
   `twitterBlogFeeds -v -n rolivercoffee MyTwitterFriendsBlogFeeds.opml`
 
 If you'd like to see a list of the command line options use the -h or --help options
   
-  Example:
+ #### Example:
   `twitterBlogFeeds --help`
