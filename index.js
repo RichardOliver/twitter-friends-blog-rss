@@ -8,47 +8,51 @@ const fs = require('fs');
  const app = {
   _client: null,
   _verboseLogging: true,
+  _outputFile: "",
+  _screenName: "",
 
   init: function() {
-    if (!process.env.TWITTER_CONSUMER_KEY 
-        || !process.env.TWITTER_CONSUMER_SECRET
-        || !process.env.TWITTER_ACCESS_TOKEN_KEY
-        || !process.env.TWITTER_ACCESS_TOKEN_SECRET) {
-      
-      
-          console.log("Please setup an environment variables called:\nTWITTER_CONSUMER_KEY\nTWITTER_CONSUMER_SECRET\nTWITTER_ACCESS_TOKEN_KEY\nTWITTER_ACCESS_TOKEN_SECRET that holds your Twitter details");
-          return;
-    }
+    this.checkEnvironmentVariablesAreSetUp();
+    this.readCommandLineArguments();
+    this.setup();
 
-    let outputFile = "";
+    this.buildOpml(this._screenName).then(opml => fs.writeFileSync(this._outputFile, opml, 'utf8'));
+  },
+
+  checkEnvironmentVariablesAreSetUp : function () {
+    if (!process.env.TWITTER_CONSUMER_KEY 
+      || !process.env.TWITTER_CONSUMER_SECRET
+      || !process.env.TWITTER_ACCESS_TOKEN_KEY
+      || !process.env.TWITTER_ACCESS_TOKEN_SECRET) {
+    
+      console.log("Please setup the following environment variables:\nTWITTER_CONSUMER_KEY\nTWITTER_CONSUMER_SECRET\nTWITTER_ACCESS_TOKEN_KEY\nTWITTER_ACCESS_TOKEN_SECRET that hold your Twitter details");
+      process.exit(1);
+    }
+  },
+
+  readCommandLineArguments: function() {
     program
     .name("twitterBlogFeeds")
     .description("Produces an OPML file of all your twitter friend's blog rss feeds" )
     .arguments('<file>')
     .option('-n, --screen-name [value]', 'twitter screen name (handle)', 'rolivercoffee')
     .option('-v, --verbose', 'verbose logging', false)
-    .action(function (file) {
-      outputFile = file;
+    .action( (file) => {
+       this._outputFile = file;
     })
     .parse(process.argv);
 
-    const screenName = program.screenName ? program.screenName : "rolivercoffee";
-    if (screenName.charAt(0) === '@')  screenName = screenName.substring(1);
-
-    if (!outputFile) {
+    if (!this._outputFile) {
       console.log();
-      console.log("-".repeat(40));
+      console.log("-".repeat(80));
       console.log("Please specify an output file name e.g. MyTwitterFriendsBlogFeeds.opml");
       console.log();
+
       program.help();
     }
 
-    this._verboseLogging = program.verbose ? program.verbose : false;
-    
-
-    this.setup();
-
-    this.buildOpml(screenName).then(opml => fs.writeFileSync(outputFile, opml, 'utf8'));
+    this._screenName = program.screenName.charAt(0) === '@' ? program.screenName.substring(1) : program.screenName;
+    this._verboseLogging = program.verbose;
   },
 
   setup : function(){
@@ -116,19 +120,11 @@ const fs = require('fs');
       include_user_entities: true,
     };
 
-    //try {
-      let result = await _client.get('friends/list', params);
-    //}
-    //catch(error) {
-    //  console.log(error);
-    //}
+    let result = await _client.get('friends/list', params);
 
     return { "friends" : result.users, "cursor": result.next_cursor_str };
   },
 
-  // sleep: function sleep(ms) {
-  //   return new Promise(resolve => setTimeout(resolve, ms));
-  // },
 
   getFeedsForFriends: async function(friends) {
     const feeds = await Promise.all(friends.filter(friend => friend.url)
@@ -144,6 +140,7 @@ const fs = require('fs');
     const foregroundGreen = "\x1b[32m";
     const foregroundRed = "\x1b[31m";
     const newline = "\n";
+    
      try {
       let feeds = await Finder(friend.url)
       if (this._verboseLogging) process.stdout.write((feeds && feeds.length > 0 ? brightColour   : "") + foregroundGreen + "Found " + (feeds ? feeds.length  : 0) + " feed(s) for " + friend.screen_name + " at " + friend.url + resetColour + newline);
