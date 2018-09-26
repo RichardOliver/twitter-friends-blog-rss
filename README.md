@@ -46,20 +46,20 @@ Options:
   
   Note: the screen-name option is your twitter handle (without the leading `@` character)
 
- #### Basic example:
-  `twitterBlogFeeds -n rolivercoffee MyTwitterFriendsBlogFeeds.opml`  
+#### Basic example:
+`twitterBlogFeeds -n rolivercoffee MyTwitterFriendsBlogFeeds.opml`  
   
-  This command will retrieve all the rss feeds for all the accounts with urls & rss feeds that @rolivercoffee is following and store the rss feeds in the `MyTwitterFriendsBlogFeeds.opml` file.
+This command will retrieve all the rss feeds for all the accounts with urls & rss feeds that [@rolivercoffee](https://twitter.com/rolivercoffee) is following and store the rss feeds in the `MyTwitterFriendsBlogFeeds.opml` file.
 
 
- #### Verbose logging example:.
-  `twitterBlogFeeds -v -n rolivercoffee MyTwitterFriendsBlogFeeds.opml`  
+#### Verbose logging example:.
+`twitterBlogFeeds -v -n rolivercoffee MyTwitterFriendsBlogFeeds.opml`  
   
 The `-v` or `--verbose` command allows you to _see_ what the program is _up to_.  
 This is helpful because it can often take quite some time to run through all the accounts.
 
   
- #### Help example:
-  `twitterBlogFeeds --help`  
+#### Help example:
+`twitterBlogFeeds --help`  
   
 The `-h` or `--help` allows you to see a list of the command line options.
