@@ -1,14 +1,17 @@
 {
   "name": "twitter-friends-blog-rss",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A command line tool to generate an OPML file of your twitter friends blog feeds",
   "main": "index.js",
   "homepage" : "https://github.com/RichardOliver/twitter-friends-blog-rss",
   "bugs" : {
     "url" : "https://github.com/RichardOliver/twitter-friends-blog-rss/issues"
   },
-  "author": "Richard Oliver",
+  "author": "Richard Oliver (http://richard.oliver.coffee)",
   "license": "Apache-2.0",
+  "engines" : { 
+    "node" : ">=7.0.0" 
+  }, 
   "bin": {
     "twitterBlogFeeds": "./index.js"
   },
