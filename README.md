@@ -8,10 +8,10 @@ Each of these URLs are checked for RSS or atom feeds and those feeds are collate
 Note: Whilst OMPL is quite an old format modern RSS readers should still be able to import these files.
 
 ## Installation
-`npm install twitter-friends-blog-rss`
+`npm install -g twitter-friends-blog-rss`
 
 ## Quick Start
-The script requires you to set up the following four operating system environment variables:
+The tool requires you to set up the following four operating system environment variables:
 
 ```
   TWITTER_CONSUMER_KEY
@@ -26,7 +26,7 @@ Then to access your keys set up an app in [Twitter Apps](https://apps.twitter.co
 
 (Note: This application uses twitter's User based authentication.)
 
-Once the script is installed and the environment variables have been set up you simply need to run `twitterBlogFeeds` from the command line.
+Once the tool is installed and the environment variables have been set up you simply need to run `twitterBlogFeeds` from the command line.
 
 ## Usage 
 ```

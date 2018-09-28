@@ -25,7 +25,7 @@ const fs = require('fs');
       || !process.env.TWITTER_ACCESS_TOKEN_KEY
       || !process.env.TWITTER_ACCESS_TOKEN_SECRET) {
     
-      console.log("Please setup the following environment variables:\nTWITTER_CONSUMER_KEY\nTWITTER_CONSUMER_SECRET\nTWITTER_ACCESS_TOKEN_KEY\nTWITTER_ACCESS_TOKEN_SECRET that hold your Twitter details");
+      console.log("Please setup the following environment variables:\nTWITTER_CONSUMER_KEY\nTWITTER_CONSUMER_SECRET\nTWITTER_ACCESS_TOKEN_KEY\nTWITTER_ACCESS_TOKEN_SECRET\nTo hold your Twitter details (see documentation for details)");
       process.exit(1);
     }
   },
@@ -140,7 +140,7 @@ const fs = require('fs');
     const foregroundGreen = "\x1b[32m";
     const foregroundRed = "\x1b[31m";
     const newline = "\n";
-    
+
      try {
       let feeds = await Finder(friend.url)
       if (this._verboseLogging) process.stdout.write((feeds && feeds.length > 0 ? brightColour   : "") + foregroundGreen + "Found " + (feeds ? feeds.length  : 0) + " feed(s) for " + friend.screen_name + " at " + friend.url + resetColour + newline);
